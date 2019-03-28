@@ -223,8 +223,36 @@ class Algorithm:
         :param l: 待排序列表
         :return: 排序列表
         """
-        return Algorithm.quick_sort([i for i in l[1:] if i < l[0]]) + l[0] + Algorithm.quick_sort(
-            [i for i in l[1:] if i >= l[0]])
+        if len(l)<=1:
+            return l
+        return Algorithm.quick_sort([i for i in l[1:] if i < l[0]]) + [l[0]] + Algorithm.quick_sort([i for i in l[1:] if i >= l[0]])
+
+    @staticmethod
+    def quick_sort_simple(l):
+        """
+        快速排序 正常方法 非递归
+        :param l:
+        :return:
+        """
+
+        def helper(l, left, right):
+            if left>=right:
+                return
+            flag = l[left]
+            i = left
+            j = right
+            while i < j:
+                while j > i and l[j] >= flag:
+                    j -= 1
+                while j > i and l[i] <= flag:
+                    i += 1
+                if i < j:
+                    l[i], l[j] = l[j], l[i]
+            l[left],l[j]=l[j],l[left]
+            helper(l,left,j-1)
+            helper(l,j+1,right)
+        helper(l, 0, len(l) - 1)
+        return l
 
     # 3、最长公共子串
 
@@ -438,11 +466,11 @@ class Algorithm:
     def rebuild_binary_tree(pre_order, in_order):
         if len(pre_order) < 1:
             return BinaryTree()
-        root_index = in_order.index(pre_order[0])
-        left_in_order = in_order[:root_index]
-        right_in_order = in_order[root_index + 1:]
-        left_pre_order = pre_order[1:len(left_in_order) + 1]
-        right_pre_order = pre_order[len(left_in_order) + 1:]
+        root_index = in_order.index(pre_order[0])  # 前序遍历第一个元素是根，并通过中序遍历分出左子树、右子树
+        left_in_order = in_order[:root_index]  # 左子树中序遍历
+        right_in_order = in_order[root_index + 1:]  # 右子树中序遍历
+        left_pre_order = pre_order[1:len(left_in_order) + 1]  # 通过左子树长度分出左子树前序遍历
+        right_pre_order = pre_order[len(left_in_order) + 1:]  # 通过右子树长度分出右子树前序遍历
         return BinaryTree(pre_order[0], Algorithm.rebuild_binary_tree(left_pre_order, left_in_order),
                           Algorithm.rebuild_binary_tree(right_pre_order, right_in_order))
 
@@ -509,7 +537,9 @@ class Algorithm:
                 if es[1] + result[s_spot[-1]] < result[es[0]]:  # 起始点经过中间点到目标点距离小于原距离则更新
                     result[es[0]] = es[1] + result[s_spot[-1]]
                     path[es[0]] = s_spot[-1]
-            new_spot = [v for v, e in result.items() if min([e for v, e in result.items() if v in v_spot]) == e and v in v_spot][0]
+            new_spot = \
+                [v for v, e in result.items() if
+                 min([e for v, e in result.items() if v in v_spot]) == e and v in v_spot][0]
             s_spot.append(new_spot)
             v_spot.remove(new_spot)
         v = [end]
@@ -591,3 +621,124 @@ class Algorithm:
             pos[1] -= 1
         for row in result:
             print(row)
+
+    # 22、股票买卖高低点
+    @staticmethod
+    def sold(alist):
+        min_y = alist[0]
+        max_value = 0
+        for i, value in enumerate(alist):
+            if value <= min_y:
+                new_min_x = i
+                min_y = alist[i]
+            else:
+                if value - min_y > max_value:
+                    min_x = new_min_x
+                    max_x = i
+                    max_value = value - alist[min_x]
+        try:
+            return min_x, max_x, max_value
+        except:
+            print('no')
+
+    # 23、镜像二叉树
+    @staticmethod
+    def mirror_tree(tree):
+        if tree.left or tree.right:
+            tree.left, tree.right = tree.right, tree.left
+            for t in (tree.left, tree.right):
+                if t:
+                    Algorithm.mirror_tree(t)
+
+    # 24、前序遍历非递归
+    @staticmethod
+    def pre_order(tree):
+        result = []
+        s = Stack()
+        s.add(tree)
+        while not s.is_empty():
+            t = s.pop()
+            result.append(t.root)
+            if t.right:
+                s.add(t.right)
+            if t.left:
+                s.add(t.left)
+        return result
+
+    # 25、中序遍历非递归
+    @staticmethod
+    def in_order(tree):
+        result = []
+        s = Stack()
+        t = tree
+        while 1:
+            while t:
+                s.add(t)
+                t = t.left
+            if not s.is_empty():
+                t = s.pop()
+                result.append(t.root)
+                t = t.right
+            else:
+                break
+        return result
+
+    # 26、后序遍历非递归
+    @staticmethod
+    def last_order(tree):
+        """
+        通过镜像的前序遍历
+        :param tree:
+        :return:
+        """
+        result = []
+        s = Stack()
+        s.add(tree)
+        while not s.is_empty():
+            t = s.pop()
+            result.append(t.root)
+            if t.left:
+                s.add(t.left)
+            if t.right:
+                s.add(t.right)
+        result.reverse()
+        return result
+
+    # 27、求矩阵左上到右下最长路径
+    def longest_path_in_matrix(self, m):
+        """
+        DP
+        :param m:
+        :return:
+        """
+        x, y = len(m[0]), len(m)
+        dp = [0 for _ in range(x)]
+        for i in range(y):
+            for j in range(x):
+                if i == 0 and j == 0:
+                    dp[j] = m[0][0]
+                elif i == 0:
+                    dp[j] = dp[j - 1] + m[i][j]
+                elif j == 0:
+                    dp[j] = dp[j] + m[i][j]
+                else:
+                    dp[j] = max(dp[j - 1], dp[j]) + m[i][j]
+        return dp[x - 1]
+
+    # 28、约瑟夫环
+    def john_circle(self, n, m):
+        """
+        f(n,m)=(f(n-1,m)+m)%n
+        :param n: 初始人数
+        :param m: 数到第几个人
+        :return: 最后一个出列
+        """
+        ans = 1
+        for i in range(n - 1):
+            ans = (ans + m) % n
+            n -= 1
+        return ans
+
+
+x = Algorithm().john_circle(10, 1)
+print(x)

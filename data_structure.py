@@ -75,29 +75,38 @@ class BinaryTree:
     def add_right(self, item):
         self.right = BinaryTree(item)
 
-    def in_order(self):
+    def in_order(self,result=None):
+        if result is None:
+            result = []
         if self.root:
             if self.left:
-                self.left.in_order()
-            print(self.root)
+                self.left.in_order(result)
+            result.append(self.root)
             if self.right:
-                self.right.in_order()
+                self.right.in_order(result)
+        return result
 
-    def pre_order(self):
+    def pre_order(self,result=None):
+        if result is None:
+            result = []
         if self.root:
-            print(self.root)
+            result.append(self.root)
             if self.left:
-                self.left.pre_order()
+                self.left.pre_order(result)
             if self.right:
-                self.right.pre_order()
+                self.right.pre_order(result)
+        return result
 
-    def last_order(self):
+    def last_order(self,result=None):
+        if result is None:
+            result = []
         if self.root:
             if self.left:
-                self.left.pre_order()
+                self.left.last_order(result)
             if self.right:
-                self.right.pre_order()
-            print(self.root)
+                self.right.last_order(result)
+            result.append(self.root)
+        return result
 
     def __str__(self):
         return self.root
